@@ -6,8 +6,8 @@
 #include "dgt_config.h"
 #include "dgt_sys_mem.h"
 #include "dgt_sys_string.h"
-#include "dgt_httpd.h"
-#include "dgt_httpd_op.h"
+#include "dgt_http.h"
+#include "dgt_http_op.h"
 
 #define DEFAULT_WEBROOT	"./www/"
 

@@ -10,7 +10,7 @@
 
 #include "httpd_svc_api.h"
 #include "dgt_ntp.h"
-#include "dgt_httpd.h"
+#include "dgt_http.h"
 /*
  *
  */

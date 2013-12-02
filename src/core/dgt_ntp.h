@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 	#include "dgt_config.h"
-	#include "dgt_httpd.h"
+	#include "dgt_http.h"
 
 	struct ntp_config_t {
 		int fd;	/**< socket file descriptor */

@@ -6,9 +6,10 @@
                    projectFiles="true">
       <logicalFolder name="f1" displayName="core" projectFiles="true">
         <itemPath>src/core/dgt_config.h</itemPath>
-        <itemPath>src/core/dgt_httpd.h</itemPath>
-        <itemPath>src/core/dgt_httpd_op.h</itemPath>
-        <itemPath>src/core/dgt_httpd_util.h</itemPath>
+        <itemPath>src/core/dgt_http.h</itemPath>
+        <itemPath>src/core/dgt_http_header.h</itemPath>
+        <itemPath>src/core/dgt_http_op.h</itemPath>
+        <itemPath>src/core/dgt_http_util.h</itemPath>
         <itemPath>src/core/dgt_log.h</itemPath>
         <itemPath>src/core/dgt_ntp.h</itemPath>
         <itemPath>src/core/dgt_ntp_op.h</itemPath>
@@ -36,9 +37,10 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="f1" displayName="core" projectFiles="true">
-        <itemPath>src/core/dgt_httpd.c</itemPath>
-        <itemPath>src/core/dgt_httpd_op.c</itemPath>
-        <itemPath>src/core/dgt_httpd_util.c</itemPath>
+        <itemPath>src/core/dgt_http.c</itemPath>
+        <itemPath>src/core/dgt_http_headers.c</itemPath>
+        <itemPath>src/core/dgt_http_op.c</itemPath>
+        <itemPath>src/core/dgt_http_util.c</itemPath>
         <itemPath>src/core/dgt_ntp.c</itemPath>
         <itemPath>src/core/dgt_ntp_op.c</itemPath>
       </logicalFolder>
@@ -90,6 +92,8 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="src/core/dgt_http_header.h" ex="false" tool="0" flavor2="0">
+      </item>
     </conf>
     <conf name="Release" type="1">
       <toolsSet>

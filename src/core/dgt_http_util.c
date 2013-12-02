@@ -4,8 +4,10 @@
  * Copyright(c) 2013 Neil Dy
  */
 #include "dgt_config.h"
-#include "dgt_httpd.h"
-#include "dgt_httpd_util.h"
+#include "dgt_http.h"
+#include "dgt_http_util.h"
+#include "dgt_http_header.h"
+
 #include "dgt_sys_string.h"
 
 #define MAX_HTTP_RESP_HEADER	(4*1024)

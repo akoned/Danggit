@@ -21,12 +21,14 @@ extern "C" {
 
 	struct http_request_t {
 		int fd;
+		char *server_name;
 
 		// HTTP server configuration
 		char *document_root;
 
 		// request parameter
 		char * request_header;
+		size_t request_header_buffer_sz;
 		size_t request_header_sz;
 		char * request_raw;
 		size_t request_raw_sz;
@@ -39,6 +41,7 @@ extern "C" {
 		size_t resp_header_sz;
 		char *resp_body;
 		char *html_page;
+		size_t resp_body_buffer_sz;
 		size_t resp_body_sz;
 		int status;
 	};
