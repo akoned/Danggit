@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="84">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <logicalFolder name="f1" displayName="core" projectFiles="true">
+        <itemPath>src/core/dgt_config.h</itemPath>
+        <itemPath>src/core/dgt_httpd.h</itemPath>
+        <itemPath>src/core/dgt_httpd_op.h</itemPath>
+        <itemPath>src/core/dgt_httpd_util.h</itemPath>
+        <itemPath>src/core/dgt_log.h</itemPath>
+        <itemPath>src/core/dgt_ntp.h</itemPath>
+        <itemPath>src/core/dgt_ntp_op.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f2" displayName="httpd" projectFiles="true">
+        <itemPath>src/httpd/httpd_svc_api.h</itemPath>
+        <itemPath>src/httpd/httpd_svc_log.h</itemPath>
+        <itemPath>src/httpd/httpd_svc_op.h</itemPath>
+        <itemPath>src/httpd/httpd_types.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f3" displayName="os" projectFiles="true">
+        <itemPath>src/os/dgt_linux_config.h</itemPath>
+        <itemPath>src/os/dgt_os_io.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f4" displayName="sys" projectFiles="true">
+        <itemPath>src/sys/dgt_sys_mem.h</itemPath>
+        <itemPath>src/sys/dgt_sys_string.h</itemPath>
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="f1" displayName="core" projectFiles="true">
+        <itemPath>src/core/dgt_httpd.c</itemPath>
+        <itemPath>src/core/dgt_httpd_op.c</itemPath>
+        <itemPath>src/core/dgt_httpd_util.c</itemPath>
+        <itemPath>src/core/dgt_ntp.c</itemPath>
+        <itemPath>src/core/dgt_ntp_op.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f2" displayName="httpd" projectFiles="true">
+        <itemPath>src/httpd/httpd_svc.c</itemPath>
+        <itemPath>src/httpd/httpd_svc_api.c</itemPath>
+        <itemPath>src/httpd/httpd_svc_op.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f3" displayName="os" projectFiles="true">
+      </logicalFolder>
+      <logicalFolder name="f4" displayName="sys" projectFiles="true">
+        <itemPath>src/sys/dgt_sys_mem.c</itemPath>
+        <itemPath>src/sys/dgt_sys_string.c</itemPath>
+        <itemPath>src/sys/list.h</itemPath>
+      </logicalFolder>
+      <itemPath>main.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>GNU|GNU</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <incDir>
+            <pElem>src/core</pElem>
+            <pElem>src/httpd</pElem>
+            <pElem>src/os</pElem>
+            <pElem>src/sys</pElem>
+          </incDir>
+        </cTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>
