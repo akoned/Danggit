@@ -12,7 +12,10 @@
 extern "C" {
 #endif
 
-int dgt_httpd_op_resp(struct http_request_t * req);
+#define DGT_HTTP_BODY_IO_MAX		(8*1024)
+#define DGT_HTTP_HEADER_IO_MAX		(4*1024)
+
+int dgt_http_op_resp(struct http_request_t * req);
 
 #ifdef	__cplusplus
 }

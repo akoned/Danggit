@@ -9,7 +9,7 @@
 #include "dgt_http.h"
 #include "dgt_http_op.h"
 
-#define DEFAULT_WEBROOT	"./www/"
+#define DEFAULT_WEBROOT	"./www"
 
 static struct list_head http_req_list_head;
 
@@ -43,15 +43,14 @@ int dgt_http_req_init(struct http_config_t *hconfig)
 	INIT_LIST_HEAD(hconfig->req_list);
 
 	// set Response callback function
-	hconfig->resp_cb = dgt_httpd_op_resp;
+	hconfig->resp_cb = dgt_http_op_resp;
 
 	// set WEB_ROOT
 	nSz = strlen(DEFAULT_WEBROOT);
 	hconfig->web_root = NULL;
 	hconfig->web_root = (char *)dgt_sys_calloc(nSz+1);
 	if (hconfig->web_root) {
-		dgt_sys_strcpy(	DEFAULT_WEBROOT, nSz,
-						hconfig->web_root, strlen(hconfig->web_root));
+		dgt_sys_strcpy(	DEFAULT_WEBROOT, nSz, hconfig->web_root, nSz+1);
 	}
 
 	return 0;

@@ -7,85 +7,85 @@
 
 void dgt_http_header_set_status(struct http_request_t * req)
 {
-	size_t nSz = strlen(req->request_header);
-	char * buff = req->request_header + nSz;
+	size_t nSz = strlen(req->resp_header);
+	char * buff = req->resp_header + nSz;
 
 	switch(req->status) {
 		case DGT_HTTP_200_OK:
-			snprintf(buff, (req->request_header_buffer_sz - nSz),
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"HTTP/%s\r\n", "1.1 200 OK");
 		case DGT_HTTP_404_NOT_FOUND:
-			snprintf(buff, (req->request_header_buffer_sz - nSz),
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"HTTP/%s\r\n", "1.1 404 Not Found");
 			break;
 		default :
-			snprintf(buff, (req->request_header_buffer_sz - nSz),
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"HTTP/%s\r\n", "1.1 200 OK");
 	}
 }
 
 void dgt_http_header_set_contentType(struct http_request_t * req)
 {
-	size_t nSz = strlen(req->request_header);
-	char * buff = req->request_header + nSz;
+	size_t nSz = strlen(req->resp_header);
+	char * buff = req->resp_header + nSz;
 
 	switch(req->type) {
 		case HTTP_REQ_TYPE_IMGPNG:
-			snprintf(buff, (req->request_header_buffer_sz - nSz),
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"Content-Type: %s\r\n", "image/png");
 			break;
 		case HTTP_REQ_TYPE_IMGJPG:
-			snprintf(buff, (req->request_header_buffer_sz - nSz),
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"Content-Type: %s\r\n", "image/jpg");
 			break;
 		case HTTP_REQ_TYPE_JS:
-			snprintf(buff, (req->request_header_buffer_sz - nSz),
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"Content-Type: %s\r\n", "text/javascript");
 			break;
 		case HTTP_REQ_TYPE_CSS:
-			snprintf(buff, (req->request_header_buffer_sz - nSz),
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"Content-Type: %s\r\n", "text/css");
 			break;
 		default:
-			snprintf(buff, (req->request_header_buffer_sz - nSz),
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"Content-Type: %s\r\n", "text/html");
 	}
 }
 
 void dgt_http_header_set_connection(struct http_request_t * req)
 {
-	size_t nSz = strlen(req->request_header);
-	char * buff = req->request_header + nSz;
+	size_t nSz = strlen(req->resp_header);
+	char * buff = req->resp_header + nSz;
 
-	snprintf(buff, (req->request_header_buffer_sz - nSz),
+	snprintf(buff, (req->resp_header_buffer_sz - nSz),
 						"Connection: %s\r\n", "Keep-Alive");
 
 }
 
 void dgt_http_header_set_date(struct http_request_t * req)
 {
-	size_t nSz = strlen(req->request_header);
-	char * buff = req->request_header + nSz;
+	size_t nSz = strlen(req->resp_header);
+	char * buff = req->resp_header + nSz;
 
-	snprintf(buff, (req->request_header_buffer_sz - nSz),
+	snprintf(buff, (req->resp_header_buffer_sz - nSz),
 						"Date: %s\r\n", "Tue, 15 Nov 1994 08:12:31 GMT");
 }
 
 void dgt_http_header_set_server(struct http_request_t * req)
 {
-	size_t nSz = strlen(req->request_header);
-	char * buff = req->request_header + nSz;
+	size_t nSz = strlen(req->resp_header);
+	char * buff = req->resp_header + nSz;
 
-	snprintf(buff, (req->request_header_buffer_sz - nSz),
+	snprintf(buff, (req->resp_header_buffer_sz - nSz),
 						"Server: %s\r\n", req->server_name);
 }
 
 void dgt_http_header_set_contentLength(struct http_request_t * req)
 {
-	size_t nSz = strlen(req->request_header);
-	char * buff = req->request_header + nSz;
+	size_t nSz = strlen(req->resp_header);
+	char * buff = req->resp_header + nSz;
 
-	snprintf(buff, (req->request_header_buffer_sz - nSz),
+	snprintf(buff, (req->resp_header_buffer_sz - nSz),
 				"Content-Length: %d\r\n", req->resp_body_sz);
 }
 
@@ -114,6 +114,8 @@ int dgt_http_header(struct http_request_t * req)
 	buff = req->request_header + nSz;
 
 	snprintf(buff, (req->request_header_buffer_sz - nSz), "\r\n");
+
+	req->request_header_sz = strlen (req->request_header);
 
 	return 0;
 }

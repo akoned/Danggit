@@ -22,37 +22,37 @@
  * @param nSz	Size of buffer
  * @param io	I/O mode (Read/Write)
  * @return
+ *	-1: error, 0: timeout, 1: success
  */
-static int httpd_svc_io(int fd, char *buf, size_t nSz, int io)
+static int httpd_svc_io(int fd, char *buf, size_t nBufSz, size_t *nIoSz,int io)
 {
 	fd_set fds;
 	struct timeval timeout;
-	int ret, returnSz = 0;
+	int sts = -1;
 
-	while (1) {
+	while (buf && nIoSz) {
 		FD_ZERO(&fds);
 		FD_SET(fd, &fds);
 
 		// set timeout
-		timeout.tv_sec = 5;
+		timeout.tv_sec = 1;
 		timeout.tv_usec = 0;
 
 		if (io == HTTPD_IO_RD) {
-			ret = dgt_os_select(fd + 1, &fds, NULL, NULL, &timeout);
+			sts = dgt_os_select(fd + 1, &fds, NULL, NULL, &timeout);
 		} else {
-			ret = dgt_os_select(fd + 1, NULL, &fds, NULL, &timeout);
+			sts = dgt_os_select(fd + 1, NULL, &fds, NULL, &timeout);
 		}
 
-		if (ret == -1) {
+		if (sts == -1) {
 			dgt_os_perror("<<httpd_svc_get_http_req>>");
-			returnSz = -1;
 			break;
-		} else if (ret) {
+		} else if (sts) {
 			// data available
 			if (io == HTTPD_IO_RD) {
-				returnSz = dgt_os_recv(fd, buf, nSz, 0);
+				*nIoSz = dgt_os_recv(fd, buf, nBufSz, 0);
 			} else {
-				returnSz = dgt_os_send(fd, buf, nSz, 0);
+				*nIoSz = dgt_os_send(fd, buf, nBufSz, 0);
 			}
 			break;
 		} else {
@@ -61,7 +61,7 @@ static int httpd_svc_io(int fd, char *buf, size_t nSz, int io)
 		}
 	}
 
-	return returnSz;
+	return sts;
 }
 
 int httpd_svc_resp2(int net_fd, int loc_fd)
@@ -121,10 +121,15 @@ int httpd_svc_resp2(int net_fd, int loc_fd)
 	}
 }
 
+#define HTTPD_SVC_RETRY	3
 static int httpd_svc_resp(int client_fd, struct httpd_conf *pConfig)
 {
 	char work_buff[HTTPD_RESP_MAX];
-	int nIoSz;
+	char *pWork_buff = work_buff;
+	size_t nIoSz = 0;
+	int sts;
+	int retry = 0;
+
 
 	if (!(pConfig)) {
 		return -1;
@@ -133,11 +138,21 @@ static int httpd_svc_resp(int client_fd, struct httpd_conf *pConfig)
 	memset(work_buff, 0x0, HTTPD_RESP_MAX);
 
 	// read response
-	nIoSz = httpd_svc_io(pConfig->loc.fd, work_buff, HTTPD_RESP_MAX, HTTPD_IO_RD);
-	HTTPDSVC_LOG_TRACE("wr-Sz.%d err.%d\n", nIoSz, errno);
-
-	// process respons
-	nIoSz = httpd_svc_io(client_fd, work_buff, strlen (work_buff), HTTPD_IO_WR);
+	while (retry < HTTPD_SVC_RETRY) {
+		sts = httpd_svc_io(pConfig->loc.fd, work_buff, HTTPD_RESP_MAX, &nIoSz, HTTPD_IO_RD);
+		if (!sts) {
+			retry++;
+		} else if (sts) {
+			HTTPDSVC_LOG_TRACE("[from core] rcvSz.%d err.%d\n", nIoSz, errno);
+			// response to client
+			nIoSz = httpd_svc_io(client_fd, work_buff, strlen (work_buff), &nIoSz, HTTPD_IO_WR);
+			HTTPDSVC_LOG_TRACE("[from client] sndSz.%d err.%d\n", nIoSz, errno);
+			memset(work_buff, 0x0, nIoSz);
+			nIoSz = 0;
+		} else {
+			break;
+		}
+	}
 
 	dgt_os_close(pConfig->loc.fd);
 }
@@ -145,14 +160,15 @@ static int httpd_svc_resp(int client_fd, struct httpd_conf *pConfig)
 int httpd_svc_req_proc(int client_fd, struct httpd_conf * config)
 {
 	char work_buff[HTTPD_RESP_MAX];
-	int nIoSz;
+	size_t nIoSz;
 	int ret;
+	int sts;
 
 	// read HTTP request
-	nIoSz = httpd_svc_io(client_fd, work_buff, HTTPD_RESP_MAX, HTTPD_IO_RD);
+	sts = httpd_svc_io(client_fd, work_buff, HTTPD_RESP_MAX, &nIoSz, HTTPD_IO_RD);
 	HTTPDSVC_LOG_TRACE("http-req-sz.%d err.%d\n", nIoSz, errno);
 
-	if (nIoSz > 0) {
+	if (sts) {
 
 		// create socket
 		config->loc.fd = dgt_os_socket(	config->loc.domain,
@@ -171,6 +187,7 @@ int httpd_svc_req_proc(int client_fd, struct httpd_conf * config)
 			nIoSz = httpd_svc_io(	config->loc.fd,
 									work_buff,
 									strlen(work_buff),
+									&nIoSz,
 									HTTPD_IO_WR);
 			HTTPDSVC_LOG_TRACE("notify-ntp-sz.%d err.%d\n", nIoSz, errno);
 

@@ -12,7 +12,10 @@
 extern "C" {
 #endif
 
-#include "list.h"
+	#include "list.h"
+
+	#define MAX_HTTP_RESP_HEADER	(4*1024)
+	#define MAX_HTTP_RESP_BODY		(8*1024)
 
 	struct header_field_t {
 		char * ptr;	// address of header field value
@@ -38,6 +41,7 @@ extern "C" {
 
 		// response parameter
 		char *resp_header;
+		size_t resp_header_buffer_sz;
 		size_t resp_header_sz;
 		char *resp_body;
 		char *html_page;

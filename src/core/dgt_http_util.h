@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-int dgt_httpd_util_InitReq(struct http_request_t * req);
+int dgt_http_util_InitReq(struct http_request_t * req);
 
 #ifdef	__cplusplus
 }

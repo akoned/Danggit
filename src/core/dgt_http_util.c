@@ -10,10 +10,7 @@
 
 #include "dgt_sys_string.h"
 
-#define MAX_HTTP_RESP_HEADER	(4*1024)
-#define MAX_HTTP_RESP_BODY		(8*1024)
-
-static size_t dgt_httpd_util_getReqUri(struct http_request_t *req, char **pValue)
+static size_t dgt_http_util_getReqUri(struct http_request_t *req, char **pValue)
 {
 	char * ptr = NULL;
 	size_t nSz = 0;
@@ -61,7 +58,7 @@ static int dgt_httpd_util_getReqType(struct http_request_t *req)
 	return http_req_type;
 }
 
-static int dgt_httpd_util_getReqMethod(struct http_request_t *req)
+static int dgt_http_util_getReqMethod(struct http_request_t *req)
 {
 	int http_req_method = HTTP_METHOD_GET;
 
@@ -75,13 +72,13 @@ static int dgt_httpd_util_getReqMethod(struct http_request_t *req)
 	return http_req_method;
 }
 
-int dgt_httpd_util_InitReq(struct http_request_t * req)
+int dgt_http_util_InitReq(struct http_request_t * req)
 {
 	size_t nSz;
 	char * pBuf;
 
 	// get URI
-	nSz = dgt_httpd_util_getReqUri(req, &pBuf);
+	nSz = dgt_http_util_getReqUri(req, &pBuf);
 	if (nSz > 0) {
 		req->uri = (char *)dgt_sys_calloc(nSz+1);
 		if (req->uri) {
@@ -94,11 +91,13 @@ int dgt_httpd_util_InitReq(struct http_request_t * req)
 	req->type = dgt_httpd_util_getReqType(req);
 
 	// get Method (GET, SET)
-	req->method = dgt_httpd_util_getReqMethod(req);
+	req->method = dgt_http_util_getReqMethod(req);
 
 	// initialize buffer for response
 	req->resp_header = (char *)dgt_sys_alloc(MAX_HTTP_RESP_HEADER);
+	req->resp_header_buffer_sz = MAX_HTTP_RESP_HEADER;
 	req->resp_body = (char *)dgt_sys_alloc(MAX_HTTP_RESP_BODY);
+	req->resp_body_buffer_sz = MAX_HTTP_RESP_BODY;
 
 	return 0;
 }

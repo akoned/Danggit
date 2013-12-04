@@ -14,6 +14,8 @@ extern "C" {
 	#include "dgt_config.h"
 	#include "dgt_http.h"
 
+	#define DGT_MAX_URI	256
+
 	enum {
 		DGT_HTTP_200_OK			= 200,
 		DGT_HTTP_403_FORBIDDEN	= 403,
