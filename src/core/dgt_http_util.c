@@ -94,9 +94,9 @@ int dgt_http_util_InitReq(struct http_request_t * req)
 	req->method = dgt_http_util_getReqMethod(req);
 
 	// initialize buffer for response
-	req->resp_header = (char *)dgt_sys_alloc(MAX_HTTP_RESP_HEADER);
+	req->resp_header = (char *)dgt_sys_calloc(MAX_HTTP_RESP_HEADER);
 	req->resp_header_buffer_sz = MAX_HTTP_RESP_HEADER;
-	req->resp_body = (char *)dgt_sys_alloc(MAX_HTTP_RESP_BODY);
+	req->resp_body = (char *)dgt_sys_calloc(MAX_HTTP_RESP_BODY);
 	req->resp_body_buffer_sz = MAX_HTTP_RESP_BODY;
 
 	return 0;

@@ -152,7 +152,7 @@ int dgt_http_send_header(struct http_request_t *req)
 	size_t nTotalSndSz = req->resp_header_sz;
 	size_t nSndSz;
 	char nRetry, bSndSts = -1;
-	char *ptr = req->request_header;
+	char *ptr = req->resp_header;
 	int ret = -1;
 
 	while (nTotalSndSz) {
@@ -169,7 +169,10 @@ int dgt_http_send_header(struct http_request_t *req)
 			} else if (ret == 1) {
 				ptr += nSndSz;
 				bSndSts = 0;
+				nTotalSndSz -= nSndSz;
+				break;
 			} else {
+				HTTPDSVC_LOG_TRACE("Send header info error (%d)", errno);
 				break;
 			}
 		}
@@ -189,13 +192,13 @@ int dgt_http_send_static_body(struct http_request_t *req)
 	memset(uri, 0x0, DGT_MAX_URI);
 
 	// set URI
-	ret = snprintf(uri, DGT_MAX_URI, "%s", req->document_root);
+	ret = snprintf(ptr, DGT_MAX_URI, "%s", req->document_root);
 	ptr += ret;
-	ret = snprintf(uri, DGT_MAX_URI - strlen(uri), "%s", req->uri);
+	ret = snprintf(ptr, DGT_MAX_URI - strlen(uri), "%s", req->uri);
 	ptr += ret;
 
 	ret = -1;
-
+HTTPDSVC_LOG_TRACE("start : nTotalSndSz.%d", nTotalSndSz);
 	pFile = dgt_os_fopen(uri, "rb");
 	if (pFile) {
 		while (nTotalSndSz) {
@@ -216,12 +219,13 @@ int dgt_http_send_static_body(struct http_request_t *req)
 			nSndSz = dgt_os_fread(req->resp_body, 1, nSndSz, pFile);
 			while (nRetry < 3) {
 				ret = dgt_httpd_op_resp_io_send2(req->fd, req->resp_body, nSndSz);
-
+HTTPDSVC_LOG_TRACE("send : ret.%d err.%d sz", ret, errno, nSndSz);
 				if (!ret) {
 					nRetry++;
 				} else if (ret == 1) {
 					ret = 0;
 					bSendSts = 0;
+					nTotalSndSz -= nSndSz;
 					break;
 				} else {
 					break;
@@ -231,7 +235,7 @@ int dgt_http_send_static_body(struct http_request_t *req)
 
 		dgt_os_fclose(pFile);
 	}
-
+HTTPDSVC_LOG_TRACE("end : nTotalSndSz.%d ret.%d", nTotalSndSz, ret);
 	return ret;
 }
 
@@ -242,29 +246,35 @@ int dgt_http_send_dynamic_body(struct http_request_t *req)
 	char nRetry, bSendSts = 0;
 	int ret = -1;
 	char *ptr = req->resp_body;
-
+HTTPDSVC_LOG_TRACE("start : nTotalSndSz.%d", nTotalSndSz);
 	while (nTotalSndSz) {
 
 		bSendSts = -1;
 		nRetry = 0;
 		ret = -1;	// set status fail
 
+		nSndSz = nTotalSndSz;
+		if (nSndSz > MAX_HTTP_RESP_BODY) {
+			nSndSz = MAX_HTTP_RESP_BODY;
+		}
+
 		while (nRetry < 3) {
 			ret = dgt_httpd_op_resp_io_send2(req->fd, ptr, nSndSz);
-
+HTTPDSVC_LOG_TRACE("send : ret.%d err.%d sz", ret, errno, nSndSz);
 			if (!ret) {
 				nRetry++;
 			} else if (ret == 1) {
 				ret = 0;
 				bSendSts = 0;
 				ptr += nSndSz;
+				nTotalSndSz -= nSndSz;
 				break;
 			} else {
 				break;
 			}
 		}
 	}
-
+HTTPDSVC_LOG_TRACE("end : nTotalSndSz.%d ret.%d", nTotalSndSz, ret);
 	return ret;
 }
 
@@ -292,7 +302,8 @@ int dgt_http_op_proc_resp_body(struct http_request_t * req)
 	req->status = -1;
 
 	// check if URI is index
-	if (req->uri && (req->uri[0] == '/' || req->uri[0] == '\\')) {
+	if (req->uri && (req->uri[0] == '/' || req->uri[0] == '\\')
+			&& (strlen(req->uri) == 1)) {
 		if (req->uri) dgt_sys_free(req->uri);
 		req->uri = (char *)dgt_sys_calloc(strlen(HTTPINDEX) + 1);
 		if (req->uri) {
@@ -333,7 +344,7 @@ int dgt_http_op_resp_client(struct http_request_t * req)
  */
 int dgt_http_op_resp(struct http_request_t * req)
 {
-	printf("Request Header, conn(%d): \n%s", req->fd, req->request_header);
+	//printf("Request Header, conn(%d): \n%s", req->fd, req->request_header);
 
 	/**< parse request header */
 	dgt_http_util_InitReq(req);

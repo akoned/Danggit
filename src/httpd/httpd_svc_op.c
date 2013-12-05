@@ -11,6 +11,7 @@
 #include "httpd_svc_op.h"
 
 #include "httpd_svc_log.h"
+#include "dgt_sys_string.h"
 
 #define HTTPDSVCRESPMAX		(8*1024)
 #define HTTPD_RESP_MAX		(4*1024)
@@ -35,7 +36,7 @@ static int httpd_svc_io(int fd, char *buf, size_t nBufSz, size_t *nIoSz,int io)
 		FD_SET(fd, &fds);
 
 		// set timeout
-		timeout.tv_sec = 1;
+		timeout.tv_sec = 60*5;
 		timeout.tv_usec = 0;
 
 		if (io == HTTPD_IO_RD) {
@@ -62,6 +63,24 @@ static int httpd_svc_io(int fd, char *buf, size_t nBufSz, size_t *nIoSz,int io)
 	}
 
 	return sts;
+}
+
+size_t httpd_svc_get_resp_body_sz(char * source)
+{
+	char * ptr1, *ptr2;
+	int tmp, sz;
+
+
+	ptr1 = dgt_sys_strstr(source, "Content-Length");
+	ptr1 = dgt_sys_strstr(ptr1, ":");
+
+	ptr2 = dgt_sys_strstr(ptr1, "\\r\\n");
+
+	tmp = (int )(ptr1 - ptr2);
+
+	sz = atoi(ptr1+1);
+
+	return (size_t) sz;
 }
 
 int httpd_svc_resp2(int net_fd, int loc_fd)
@@ -126,7 +145,7 @@ static int httpd_svc_resp(int client_fd, struct httpd_conf *pConfig)
 {
 	char work_buff[HTTPD_RESP_MAX];
 	char *pWork_buff = work_buff;
-	size_t nIoSz = 0;
+	size_t nIoSz = 0, nRespBodySz = 0;
 	int sts;
 	int retry = 0;
 
@@ -136,23 +155,52 @@ static int httpd_svc_resp(int client_fd, struct httpd_conf *pConfig)
 	}
 
 	memset(work_buff, 0x0, HTTPD_RESP_MAX);
-
-	// read response
+HTTPDSVC_LOG_TRACE("Start : Send Response Header");
+	// send response header
 	while (retry < HTTPD_SVC_RETRY) {
-		sts = httpd_svc_io(pConfig->loc.fd, work_buff, HTTPD_RESP_MAX, &nIoSz, HTTPD_IO_RD);
+		sts = httpd_svc_io(	pConfig->loc.fd, work_buff, HTTPD_RESP_MAX,
+								&nIoSz, HTTPD_IO_RD);
+
 		if (!sts) {
 			retry++;
 		} else if (sts) {
 			HTTPDSVC_LOG_TRACE("[from core] rcvSz.%d err.%d\n", nIoSz, errno);
 			// response to client
-			nIoSz = httpd_svc_io(client_fd, work_buff, strlen (work_buff), &nIoSz, HTTPD_IO_WR);
+			httpd_svc_io(	client_fd, work_buff,
+							strlen (work_buff), &nIoSz, HTTPD_IO_WR);
 			HTTPDSVC_LOG_TRACE("[from client] sndSz.%d err.%d\n", nIoSz, errno);
-			memset(work_buff, 0x0, nIoSz);
 			nIoSz = 0;
+			break;
 		} else {
 			break;
 		}
 	}
+HTTPDSVC_LOG_TRACE("End : Send Response Header\n");
+	retry = 0;
+	nRespBodySz = httpd_svc_get_resp_body_sz(work_buff);
+HTTPDSVC_LOG_TRACE("Start : Send Response body (%d)", nRespBodySz);
+	// read response
+	while (nRespBodySz) {
+		memset(work_buff, 0x0, HTTPD_RESP_MAX);
+		sts = httpd_svc_io(	pConfig->loc.fd, work_buff,
+							HTTPD_RESP_MAX, &nIoSz, HTTPD_IO_RD);
+
+		if (!sts) {
+			retry++;
+		} else if (sts) {
+			HTTPDSVC_LOG_TRACE("[from core] rcvSz.%d err.%d\n", nIoSz, errno);
+			// response to client
+			sts = httpd_svc_io(	client_fd, work_buff,
+									strlen (work_buff), &nIoSz, HTTPD_IO_WR);
+			HTTPDSVC_LOG_TRACE("[from client] sndSz.%d err.%d\n", nIoSz, errno);
+			memset(work_buff, 0x0, nIoSz);
+			retry = 0;
+			nRespBodySz -= nIoSz;
+		} else {
+			break;
+		}
+	}
+HTTPDSVC_LOG_TRACE("End : Send Response body (%d)\n", nRespBodySz);
 
 	dgt_os_close(pConfig->loc.fd);
 }

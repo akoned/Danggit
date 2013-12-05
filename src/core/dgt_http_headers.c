@@ -110,12 +110,12 @@ int dgt_http_header(struct http_request_t * req)
 	//
 	dgt_http_header_set_date(req);
 
-	nSz = strlen (req->request_header);
-	buff = req->request_header + nSz;
+	nSz = strlen (req->resp_header);
+	buff = req->resp_header + nSz;
 
-	snprintf(buff, (req->request_header_buffer_sz - nSz), "\r\n");
+	snprintf(buff, (req->resp_header_buffer_sz - nSz), "\r\n");
 
-	req->request_header_sz = strlen (req->request_header);
+	req->resp_header_sz = strlen (req->request_header);
 
 	return 0;
 }

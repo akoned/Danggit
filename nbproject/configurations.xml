@@ -38,6 +38,7 @@
                    projectFiles="true">
       <logicalFolder name="f1" displayName="core" projectFiles="true">
         <itemPath>src/core/dgt_http.c</itemPath>
+        <itemPath>src/core/dgt_http_body.c</itemPath>
         <itemPath>src/core/dgt_http_headers.c</itemPath>
         <itemPath>src/core/dgt_http_op.c</itemPath>
         <itemPath>src/core/dgt_http_util.c</itemPath>

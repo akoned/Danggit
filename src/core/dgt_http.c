@@ -91,6 +91,8 @@ int dgt_http_req_handler(void *data)
 				}
 
 				config->resp_cb(&req_ent->req);
+
+				dgt_sys_free(req_ent);
 			}
 			printf("list is not empty!!!!\n");
 		}
