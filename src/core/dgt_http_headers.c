@@ -18,6 +18,10 @@ void dgt_http_header_set_status(struct http_request_t * req)
 			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"HTTP/%s\r\n", "1.1 404 Not Found");
 			break;
+		case DGT_HTTP_500_INTERNAL_ERR:
+			snprintf(buff, (req->resp_header_buffer_sz - nSz),
+								"HTTP/%s\r\n", "1.1 500 Internal Error");
+			break;
 		default :
 			snprintf(buff, (req->resp_header_buffer_sz - nSz),
 								"HTTP/%s\r\n", "1.1 200 OK");

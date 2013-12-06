@@ -130,9 +130,8 @@ void * httpd_net(void *data)
 int httpd_start()
 {
 	struct httpd_conf *conf;
-	pthread_t thread_net = 0, thread_loc = 0;
+	pthread_t thread_net = 0;
 	int ret = -1;
-	int ret1 = 0, ret2 = 0;
 
 	// allocate socket handles
 	conf = (struct httpd_conf *)dgt_sys_alloc(sizeof(struct httpd_conf));
@@ -142,12 +141,12 @@ int httpd_start()
 		ret = httpd_init(conf);
 
 	if (!ret) {
-		ret1 = pthread_create(&thread_net, NULL, httpd_net, (void *)conf);
+		ret = pthread_create(&thread_net, NULL, httpd_net, (void *)conf);
+	} else {
+		HTTPDSVC_LOG_SYS("HTTPD Service initialize fail(%d)\n",ret);
 	}
 
 	//pthread_join(thread_net, NULL);
 
-	HTTPDSVC_LOG_SYS("Thread 1 returns: %d\n",ret1);
-
-	return 0;
+	return ret;
 }

@@ -15,6 +15,7 @@
 #include "httpd_svc_log.h"
 #include "dgt_sys_string.h"
 #include "dgt_http_op.h"
+#include "dgt_log.h"
 
 #define MAXRESPHEADER	(4*1024)
 #define MAXRESPBODY		(2*MAXRESPHEADER)
@@ -107,13 +108,13 @@ int dgt_httpd_op_resp_io_send(struct http_request_t *req)
 	}
 }
 
-int dgt_httpd_op_resp_io_send2(int fd, char *buf, size_t nSz)
+int dgt_http_op_resp_io_send2(int fd, char *buf, size_t nSz)
 {
 	fd_set fds;
 	struct timeval timeout;
 	size_t nTotalSndSz = nSz, nSndSz;
 	int ret = -1;
-
+DGT_LOG_TRACE("START");
 	while (nTotalSndSz) {
 		FD_ZERO(&fds);
 		FD_SET(fd, &fds);
@@ -138,12 +139,13 @@ int dgt_httpd_op_resp_io_send2(int fd, char *buf, size_t nSz)
 
 				nSndSz = dgt_os_send(fd, buf, nSndSz, 0);
 				nTotalSndSz -= nSndSz;
+DGT_LOG_TRACE("nTotalSndSz.%d nSndSz.%d", nTotalSndSz, nSndSz);
 			}
 		} else {
 			HTTPDSVC_LOG_TRACE("timeout : header response!!!");
 		}
 	}
-
+DGT_LOG_TRACE("END");
 	return ret;
 }
 
@@ -163,7 +165,7 @@ int dgt_http_send_header(struct http_request_t *req)
 		nRetry = 0;
 		bSndSts = -1;
 		while (nRetry < 3) {
-			ret = dgt_httpd_op_resp_io_send2(req->fd, ptr, nSndSz);
+			ret = dgt_http_op_resp_io_send2(req->fd, ptr, nSndSz);
 			if (!ret) {
 				nRetry++;
 			} else if (ret == 1) {
@@ -177,6 +179,8 @@ int dgt_http_send_header(struct http_request_t *req)
 			}
 		}
 	}
+
+	return ret;
 }
 
 int dgt_http_send_static_body(struct http_request_t *req)
@@ -198,10 +202,13 @@ int dgt_http_send_static_body(struct http_request_t *req)
 	ptr += ret;
 
 	ret = -1;
+
 HTTPDSVC_LOG_TRACE("start : nTotalSndSz.%d", nTotalSndSz);
 	pFile = dgt_os_fopen(uri, "rb");
 	if (pFile) {
 		while (nTotalSndSz) {
+
+			req->status = DGT_HTTP_500_INTERNAL_ERR;
 
 			if (bSendSts) {
 				break;
@@ -218,7 +225,7 @@ HTTPDSVC_LOG_TRACE("start : nTotalSndSz.%d", nTotalSndSz);
 
 			nSndSz = dgt_os_fread(req->resp_body, 1, nSndSz, pFile);
 			while (nRetry < 3) {
-				ret = dgt_httpd_op_resp_io_send2(req->fd, req->resp_body, nSndSz);
+				ret = dgt_http_op_resp_io_send2(req->fd, req->resp_body, nSndSz);
 HTTPDSVC_LOG_TRACE("send : ret.%d err.%d sz", ret, errno, nSndSz);
 				if (!ret) {
 					nRetry++;
@@ -226,14 +233,19 @@ HTTPDSVC_LOG_TRACE("send : ret.%d err.%d sz", ret, errno, nSndSz);
 					ret = 0;
 					bSendSts = 0;
 					nTotalSndSz -= nSndSz;
+					req->status = DGT_HTTP_200_OK;
 					break;
 				} else {
 					break;
 				}
 			}
 		}
-
+		if (nRetry == 3) {
+			req->status = DGT_HTTP_500_INTERNAL_ERR;
+		}
 		dgt_os_fclose(pFile);
+	} else {
+		req->status = DGT_HTTP_404_NOT_FOUND;
 	}
 HTTPDSVC_LOG_TRACE("end : nTotalSndSz.%d ret.%d", nTotalSndSz, ret);
 	return ret;
@@ -246,6 +258,9 @@ int dgt_http_send_dynamic_body(struct http_request_t *req)
 	char nRetry, bSendSts = 0;
 	int ret = -1;
 	char *ptr = req->resp_body;
+
+	req->status = DGT_HTTP_500_INTERNAL_ERR;
+
 HTTPDSVC_LOG_TRACE("start : nTotalSndSz.%d", nTotalSndSz);
 	while (nTotalSndSz) {
 
@@ -259,7 +274,7 @@ HTTPDSVC_LOG_TRACE("start : nTotalSndSz.%d", nTotalSndSz);
 		}
 
 		while (nRetry < 3) {
-			ret = dgt_httpd_op_resp_io_send2(req->fd, ptr, nSndSz);
+			ret = dgt_http_op_resp_io_send2(req->fd, ptr, nSndSz);
 HTTPDSVC_LOG_TRACE("send : ret.%d err.%d sz", ret, errno, nSndSz);
 			if (!ret) {
 				nRetry++;
@@ -268,6 +283,7 @@ HTTPDSVC_LOG_TRACE("send : ret.%d err.%d sz", ret, errno, nSndSz);
 				bSendSts = 0;
 				ptr += nSndSz;
 				nTotalSndSz -= nSndSz;
+				req->status = DGT_HTTP_200_OK;
 				break;
 			} else {
 				break;

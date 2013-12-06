@@ -12,6 +12,7 @@
 
 #include "httpd_svc_log.h"
 #include "dgt_sys_string.h"
+#include "dgt_log.h"
 
 #define HTTPDSVCRESPMAX		(8*1024)
 #define HTTPD_RESP_MAX		(4*1024)
@@ -30,7 +31,7 @@ static int httpd_svc_io(int fd, char *buf, size_t nBufSz, size_t *nIoSz,int io)
 	fd_set fds;
 	struct timeval timeout;
 	int sts = -1;
-
+DGT_LOG_TRACE("START");
 	while (buf && nIoSz) {
 		FD_ZERO(&fds);
 		FD_SET(fd, &fds);
@@ -50,18 +51,21 @@ static int httpd_svc_io(int fd, char *buf, size_t nBufSz, size_t *nIoSz,int io)
 			break;
 		} else if (sts) {
 			// data available
-			if (io == HTTPD_IO_RD) {
-				*nIoSz = dgt_os_recv(fd, buf, nBufSz, 0);
-			} else {
-				*nIoSz = dgt_os_send(fd, buf, nBufSz, 0);
+			if (FD_ISSET(fd, &fds)) {
+				if (io == HTTPD_IO_RD) {
+					*nIoSz = dgt_os_recv(fd, buf, nBufSz, 0);
+					DGT_LOG_TRACE("rcvSz.%d", *nIoSz);
+				} else {
+					*nIoSz = dgt_os_send(fd, buf, nBufSz, 0);
+				}
+				break;
 			}
-			break;
 		} else {
 			printf("%s : Data timeout \n", __FUNCTION__);
 			break;
 		}
 	}
-
+DGT_LOG_TRACE("END");
 	return sts;
 }
 
@@ -168,7 +172,8 @@ HTTPDSVC_LOG_TRACE("Start : Send Response Header");
 			// response to client
 			httpd_svc_io(	client_fd, work_buff,
 							strlen (work_buff), &nIoSz, HTTPD_IO_WR);
-			HTTPDSVC_LOG_TRACE("[from client] sndSz.%d err.%d\n", nIoSz, errno);
+			HTTPDSVC_LOG_TRACE("[from client] nIoSz.%d err.%d actual.%d\n",
+									nIoSz, errno, strlen (work_buff));
 			nIoSz = 0;
 			break;
 		} else {
