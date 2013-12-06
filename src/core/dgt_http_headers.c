@@ -4,6 +4,7 @@
  * Copyright(c) 2013 Neil Dy
  */
 #include "dgt_http_header.h"
+#include "dgt_log.h"
 
 void dgt_http_header_set_status(struct http_request_t * req)
 {
@@ -119,7 +120,7 @@ int dgt_http_header(struct http_request_t * req)
 
 	snprintf(buff, (req->resp_header_buffer_sz - nSz), "\r\n");
 
-	req->resp_header_sz = strlen (req->request_header);
-
+	req->resp_header_sz = strlen (req->resp_header);
+	DGT_LOG_TRACE("resp_header_sz.%d", req->resp_header_sz);
 	return 0;
 }

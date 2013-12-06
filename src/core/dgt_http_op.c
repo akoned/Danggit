@@ -40,7 +40,7 @@ int dgt_http_op_is_static_page(int type)
 	return ret;
 }
 
-int dgt_httpd_op_resp_io_send(struct http_request_t *req)
+int dgt_http_op_resp_io_send(struct http_request_t *req)
 {
 	fd_set fds;
 	struct timeval timeout;
@@ -149,7 +149,7 @@ DGT_LOG_TRACE("END");
 	return ret;
 }
 
-int dgt_http_send_header(struct http_request_t *req)
+int dgt_http_op_send_header(struct http_request_t *req)
 {
 	size_t nTotalSndSz = req->resp_header_sz;
 	size_t nSndSz;
@@ -183,7 +183,7 @@ int dgt_http_send_header(struct http_request_t *req)
 	return ret;
 }
 
-int dgt_http_send_static_body(struct http_request_t *req)
+int dgt_http_op_send_static_body(struct http_request_t *req)
 {
 	char uri[DGT_MAX_URI];
 	char *ptr = uri;
@@ -251,7 +251,7 @@ HTTPDSVC_LOG_TRACE("end : nTotalSndSz.%d ret.%d", nTotalSndSz, ret);
 	return ret;
 }
 
-int dgt_http_send_dynamic_body(struct http_request_t *req)
+int dgt_http_op_send_dynamic_body(struct http_request_t *req)
 {
 	size_t nTotalSndSz = req->resp_body_sz;
 	size_t nSndSz;
@@ -344,12 +344,15 @@ int dgt_http_op_resp_client(struct http_request_t * req)
 	dgt_http_op_proc_resp_header(req);
 
 	// response header
-	dgt_http_send_header(req);
+	dgt_http_op_send_header(req);
+DGT_LOG_TRACE("send header done!!!");
 	// response body
 	if (dgt_http_op_is_static_page(req->type)) {
-		dgt_http_send_static_body(req);
+		dgt_http_op_send_static_body(req);
+DGT_LOG_TRACE("send static body done!!!");
 	} else {
-		dgt_http_send_dynamic_body(req);
+		dgt_http_op_send_dynamic_body(req);
+DGT_LOG_TRACE("send dynamic body done!!!");
 	}
 }
 
@@ -361,7 +364,7 @@ int dgt_http_op_resp_client(struct http_request_t * req)
 int dgt_http_op_resp(struct http_request_t * req)
 {
 	//printf("Request Header, conn(%d): \n%s", req->fd, req->request_header);
-
+DGT_LOG_TRACE("START----");
 	/**< parse request header */
 	dgt_http_util_InitReq(req);
 
@@ -370,6 +373,6 @@ int dgt_http_op_resp(struct http_request_t * req)
 
 	// Release request
 	dgt_httpd_util_ReleaseReq(req);
-
+DGT_LOG_TRACE("END-----");
 	return 0;
 }

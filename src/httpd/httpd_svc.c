@@ -38,7 +38,7 @@ int httpd_init(struct httpd_conf *hConfig)
 	loc->protocol = IPPROTO_IP;
 
 	hConfig->max_conn = 10;
-	hConfig->port = 8085;
+	hConfig->port = 8086;
 
 	// HTTPD I/O
 	hConfig->httpd_req_proc = httpd_svc_req_proc;
