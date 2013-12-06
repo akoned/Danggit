@@ -104,6 +104,12 @@
       <compileType>
         <cTool>
           <developmentMode>5</developmentMode>
+          <incDir>
+            <pElem>src/core</pElem>
+            <pElem>src/httpd</pElem>
+            <pElem>src/os</pElem>
+            <pElem>src/sys</pElem>
+          </incDir>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
@@ -114,6 +120,11 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
     </conf>
   </confs>
